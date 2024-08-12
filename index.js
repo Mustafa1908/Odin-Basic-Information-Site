@@ -1,33 +1,26 @@
-const { createServer } = require("node:http");
-var fs = require("fs");
-var url = require("url");
-const hostname = "localhost";
-const port = 8080;
+const express = require("express");
+const app = express();
 
-const server = createServer((req, res) => {
-  let fileUrl = url.parse(req.url, true);
-  let fileLocation;
-
-  if (fileUrl.path === "/") {
-    fileLocation = "/index.html";
-  } else if (fileUrl.path === "/about") {
-    fileLocation = "/about.html";
-  } else if (fileUrl.path === "/contact-me") {
-    fileLocation = "/contact-me.html";
+app.use(function (req, res, next) {
+  if (req.url !== "/" && req.url !== "/about" && req.url !== "/contact-me") {
+    res.sendFile("public/404.html", { root: __dirname });
+    return;
   }
-
-  fs.readFile(`public${fileLocation}`, function (err, data) {
-    if (err) {
-      res.writeHead(404, { "Content-Type": "text/html" });
-      return res.end("Page not found");
-    }
-
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.write(data);
-    return res.end();
-  });
+  return next();
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+app.get("/", (req, res) => {
+  res.sendFile("public/index.html", { root: __dirname });
 });
+
+app.get("/about", (req, res) =>
+  res.sendFile("public/about.html", { root: __dirname })
+);
+app.get("/contact-me", (req, res) =>
+  res.sendFile("public/contact-me.html", { root: __dirname })
+);
+
+const PORT = 8080;
+app.listen(PORT, () =>
+  console.log(`My first Express app - listening on port ${PORT}!`)
+);
